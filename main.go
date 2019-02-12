@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"log"
 
 	_ "github.com/lib/pq"
 	"github.com/vrgbrg/flowfluence/database"
@@ -24,6 +25,6 @@ func main() {
 	_, err := database.Connect(connection)
 
 	if err != nil {
-		panic(err)
+		log.Fatal(err)
 	}
 }

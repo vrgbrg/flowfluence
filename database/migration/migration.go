@@ -3,6 +3,7 @@ package main
 import (
 	"database/sql"
 	"fmt"
+	"log"
 
 	_ "github.com/lib/pq"
 	"github.com/vrgbrg/flowfluence/database"
@@ -23,9 +24,8 @@ func main() {
 		host, port, user, password, dbname)
 
 	db, err := database.Connect(connection)
-
 	if err != nil {
-		panic(err)
+		log.Fatal(err)
 	}
 
 	for _, schema := range schemas {
@@ -36,7 +36,7 @@ func main() {
 func createSchema(db *sql.DB, schema string) {
 	_, err := db.Exec(schema)
 	if err != nil {
-		panic(err)
+		log.Fatal(err)
 	}
 }
 
