@@ -19,6 +19,28 @@ func NewPostHandler(db *sql.DB) *PostHandler {
 	}
 }
 
+func (h *PostHandler) GetAll(ctx context.Context) ([]Post, error) {
+	var posts []Post
+
+	rows, err := h.db.QueryContext(ctx, "SELECT id, title, status, author, createdAt, modifiedAt, deletedAt FROM posts")
+
+	for rows.Next() {
+		var post Post
+
+		err := rows.Scan(&post.ID, &post.Title, &post.Status, &post.Author, &post.CreatedAt, &post.ModifiedAt, &post.DeletedAt)
+		if err != nil {
+			return nil, err
+		}
+		posts = append(posts, post)
+	}
+
+	if err != nil {
+		return posts, err
+	}
+
+	return posts, nil
+}
+
 func (h *PostHandler) Get(ctx context.Context, p Post) (Post, error) {
 	var post Post
 
@@ -142,7 +164,7 @@ type PostElementHandler struct {
 	db *sql.DB
 }
 
-func newPostElementHandler(db *sql.DB) *PostElementHandler {
+func NewPostElementHandler(db *sql.DB) *PostElementHandler {
 	return &PostElementHandler{
 		db: db,
 	}
@@ -252,6 +274,27 @@ func (h *PostElementHandler) Delete(ctx context.Context, pE PostElement) error {
 	return nil
 }
 
+func (h *PostElementHandler) DeleteByPostId(ctx context.Context, postId string) error {
+	stmt, err := h.db.PrepareContext(ctx, "DELETE FROM postelements WHERE postId = $1;")
+	if err != nil {
+		return err
+	}
+
+	res, err := stmt.ExecContext(ctx, postId)
+	if err != nil {
+		return err
+	}
+	num, err := res.RowsAffected()
+	if err != nil {
+		return err
+	}
+	if num != 1 {
+		return errors.New("affected rows invalid")
+	}
+
+	return nil
+}
+
 type UserHandler struct {
 	db *sql.DB
 }
@@ -260,6 +303,28 @@ func NewUserHandler(db *sql.DB) *UserHandler {
 	return &UserHandler{
 		db: db,
 	}
+}
+
+func (h *UserHandler) GetAll(ctx context.Context) ([]User, error) {
+	var users []User
+
+	rows, err := h.db.QueryContext(ctx, "SELECT id, type, name, password, email FROM users")
+
+	for rows.Next() {
+		var user User
+
+		err := rows.Scan(&user.ID, &user.Type, &user.Name, &user.Password, &user.Email)
+		if err != nil {
+			return nil, err
+		}
+		users = append(users, user)
+	}
+
+	if err != nil {
+		return users, err
+	}
+
+	return users, nil
 }
 
 func (h *UserHandler) Get(ctx context.Context, u User) (User, error) {
